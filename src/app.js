@@ -10,6 +10,12 @@ document.querySelector('.post-submit').addEventListener('click', submitPost);
 // listen for delete
 document.querySelector('#posts').addEventListener('click', deletePost);
 
+// listen for edit state
+document.querySelector('#posts').addEventListener('click', enableEdit);
+
+// listen for cancel edit
+document.querySelector('.card-form').addEventListener('click', cancelEdit);
+
 //get posts
 function getPosts() {
   http
@@ -23,20 +29,24 @@ function submitPost() {
   const title = document.querySelector('#title').value;
   const body = document.querySelector('#body').value;
 
-  const data = {
-    title,
-    body,
-  };
+  if (title === '' || body === '') {
+    ui.showAlert('Please fill in fields', 'alert alert-danger');
+  } else {
+    const data = {
+      title,
+      body,
+    };
 
-  // create Post
-  http
-    .post('http://localhost:3000/posts', data)
-    .then((data) => {
-      ui.showAlert('Post added', 'alert alert-success');
-      ui.clearFields();
-      getPosts();
-    })
-    .catch((err) => console.log(err));
+    // create Post
+    http
+      .post('http://localhost:3000/posts', data)
+      .then((data) => {
+        ui.showAlert('Post added', 'alert alert-success');
+        ui.clearFields();
+        getPosts();
+      })
+      .catch((err) => console.log(err));
+  }
 }
 
 // delete post
@@ -54,4 +64,33 @@ function deletePost(e) {
         .catch((err) => console.log(err));
     }
   }
+}
+
+// enable edit state
+function enableEdit(e) {
+  e.preventDefault();
+  if (e.target.parentElement.classList.contains('edit')) {
+    const id = e.target.parentElement.dataset.id;
+    const title =
+      e.target.parentElement.previousElementSibling.previousElementSibling
+        .textContent;
+    const body = e.target.parentElement.previousElementSibling.textContent;
+    const data = {
+      id,
+      title,
+      body,
+    };
+
+    // fill form with current post
+    ui.fillForm(data);
+  }
+}
+
+// cancel edit state
+function cancelEdit(e) {
+  if (e.target.classList.contains('post-cancel')) {
+    ui.changeFormState('add');
+  }
+
+  e.preventDefault();
 }
